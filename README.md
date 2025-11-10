@@ -1,37 +1,62 @@
-# Flutter Camera Fork - Video Resolution API
+# Flutter Camera Fork - Direct Resolution Access
 
-This is a fork of the official [Flutter Camera plugin](https://github.com/flutter/packages/tree/main/packages/camera) with added support for querying native video resolutions via Android's CamcorderProfile API.
+This is a fork of the official [Flutter Camera plugin](https://github.com/flutter/packages/tree/main/packages/camera) with added support for querying the device's **actual camera resolutions** instead of being limited to abstract presets.
 
 ## Why This Fork?
 
-The official Flutter camera plugin provides `availableCameras()` to list cameras and resolution presets, but it doesn't expose which resolutions are actually **supported for video recording**. This causes a critical issue:
+The official Flutter camera plugin only provides **resolution presets** like `ResolutionPreset.max`, `ResolutionPreset.high`, `ResolutionPreset.medium`, etc. These presets:
+
+- ❌ Don't tell you the actual resolution (width × height)
+- ❌ Map to different resolutions on different devices
+- ❌ Don't let you choose specific resolutions you need
+- ❌ Make it impossible to show users what resolution they're actually using
+- ❌ Prevent precise control over photo and video quality
 
 ### The Problem
 
-When building a video recording app, the camera API returns **photo resolutions** (e.g., 4000×3000, 3264×2448) that may not be supported by the device's video encoder. Attempting to record video at these resolutions results in:
+**For Photos:**
+You can't query what photo resolutions are actually available. You're stuck with vague presets and no way to let users choose "4K" vs "8MP" vs "1080p" for photos.
 
-- ❌ Recording failures
-- ❌ Crashes during video capture
-- ❌ Poor user experience with misleading resolution options
-- ❌ No way to query which resolutions actually work for video
+**For Videos:**
+Even worse - photo resolutions may not be supported by the video encoder! Trying to record video at a photo resolution can cause:
+- Recording failures
+- Crashes during video capture
+- No way to query which resolutions actually work for video
 
 ### The Solution
 
-This fork adds a new API: **`availableCameraVideoResolutions()`**
+This fork adds **two new APIs** that expose the device's actual camera capabilities:
 
-This function queries Android's `CamcorderProfile` to return only resolutions that are guaranteed to work for video recording (e.g., 1920×1080, 1280×720, 3840×2160).
+**1. `availableCameraResolutions()`** - Get all photo resolutions
+Returns all resolutions supported by the camera sensor (e.g., 4000×3000, 3264×2448, 1920×1080)
+
+**2. `availableCameraVideoResolutions()`** - Get video-capable resolutions
+Returns resolutions guaranteed to work for video recording via CamcorderProfile (e.g., 3840×2160, 1920×1080, 1280×720)
 
 ## What's New
 
-### New API Method
+### New API Methods
 
+**1. Photo Resolutions API**
+```dart
+/// Returns all available resolutions for the specified camera.
+///
+/// Returns a list of [CameraResolution] objects representing all
+/// resolutions supported by the camera sensor for photo/video capture.
+/// This gives you actual pixel dimensions instead of abstract presets.
+Future<List<CameraResolution>> availableCameraResolutions(
+  CameraDescription cameraDescription,
+);
+```
+
+**2. Video Resolutions API**
 ```dart
 /// Get available video resolutions for a camera.
 ///
 /// Returns resolutions supported by CamcorderProfile for video recording.
 /// These resolutions are guaranteed to be usable for video recording,
-/// unlike [availableCameraResolutions] which returns photo resolutions
-/// that may not be supported for video.
+/// unlike [availableCameraResolutions] which returns all sensor resolutions
+/// that may not be supported by the video encoder.
 Future<List<CameraResolution>> availableCameraVideoResolutions(
   CameraDescription cameraDescription,
 );
@@ -47,22 +72,47 @@ Future<void> setupCamera() async {
   final cameras = await availableCameras();
   final backCamera = cameras.first;
 
-  // Get video-capable resolutions
+  // PHOTO MODE: Get all available photo resolutions
+  final photoResolutions = await availableCameraResolutions(backCamera);
+  print('Photo resolutions available: ${photoResolutions.length}');
+  photoResolutions.forEach((res) {
+    print('  ${res.width}×${res.height} @ ${res.minFps}-${res.maxFps}fps');
+  });
+  // Example output:
+  // Photo resolutions available: 15
+  //   4000×3000 @ 15-30fps
+  //   3264×2448 @ 15-30fps
+  //   1920×1080 @ 15-30fps
+  //   1280×720 @ 15-30fps
+
+  // Pick highest photo resolution
+  final bestPhotoResolution = photoResolutions.reduce((a, b) =>
+    (a.width * a.height) > (b.width * b.height) ? a : b
+  );
+
+  // VIDEO MODE: Get video-capable resolutions only
   final videoResolutions = await availableCameraVideoResolutions(backCamera);
+  print('Video resolutions available: ${videoResolutions.length}');
+  videoResolutions.forEach((res) {
+    print('  ${res.width}×${res.height} @ ${res.minFps}-${res.maxFps}fps');
+  });
+  // Example output:
+  // Video resolutions available: 5
+  //   3840×2160 @ 15-30fps  (4K)
+  //   1920×1080 @ 15-30fps  (1080p)
+  //   1280×720 @ 15-30fps   (720p)
+  //   640×480 @ 15-30fps    (480p)
 
   // Pick highest video resolution
   final bestVideoResolution = videoResolutions.reduce((a, b) =>
     (a.width * a.height) > (b.width * b.height) ? a : b
   );
 
-  print('Best video resolution: ${bestVideoResolution.width}×${bestVideoResolution.height}');
-  // Output: Best video resolution: 1920×1080 (or 3840×2160 on devices that support 4K)
-
-  // Create camera controller with video resolution
+  // Create camera controller with chosen resolution
   final controller = CameraController.withResolution(
     backCamera,
-    bestVideoResolution,
-    enableAudio: true,
+    isVideoMode ? bestVideoResolution : bestPhotoResolution,
+    enableAudio: isVideoMode,
   );
 
   await controller.initialize();
@@ -117,28 +167,65 @@ for (int quality : qualityLevels) {
 
 This guarantees that every returned resolution is supported for video recording.
 
-## Comparison: Photo vs Video Resolutions
+## Comparison: Presets vs Direct Resolution Access
 
-### Before (using `availableCameraResolutions()`)
+### Before (Official Plugin - Preset-Based)
 ```dart
-final resolutions = await availableCameraResolutions(camera);
-// Returns: [4000×3000, 3264×2448, 1920×1080, 1280×720, ...]
-// ⚠️ 4000×3000 and 3264×2448 may NOT work for video!
+// Official plugin only has vague presets
+final controller = CameraController(
+  camera,
+  ResolutionPreset.max,  // What resolution is this? 🤷
+);
+
+// Problems:
+// ❌ Can't query available resolutions
+// ❌ Can't show users what resolution they're using
+// ❌ Can't let users choose specific resolutions
+// ❌ "max" might be 4K on one device, 1080p on another
+// ❌ No way to know if a resolution works for video
 ```
 
-### After (using `availableCameraVideoResolutions()`)
+### After (This Fork - Direct Access)
 ```dart
+// Get ALL photo resolutions (sensor capabilities)
+final photoResolutions = await availableCameraResolutions(camera);
+// Returns: [4000×3000, 3264×2448, 1920×1080, 1280×720, ...]
+// ✅ See exactly what the camera sensor supports
+// ✅ Show users a list to choose from
+// ✅ Perfect for high-quality photos
+
+// Get video-capable resolutions (encoder-safe)
 final videoResolutions = await availableCameraVideoResolutions(camera);
-// Returns: [3840×2160, 1920×1080, 1280×720, ...]
-// ✅ All resolutions are guaranteed to work for video recording
+// Returns: [3840×2160, 1920×1080, 1280×720, 640×480, ...]
+// ✅ Guaranteed to work for video recording
+// ✅ No crashes or recording failures
+// ✅ CamcorderProfile-verified resolutions
+
+// Use the resolution you want
+final controller = CameraController.withResolution(
+  camera,
+  photoResolutions.first,  // Exact control!
+);
 ```
 
 ## Use Case
 
-This fork was created for the [Android Folder Gallery](https://github.com/BenjaminKobjolke/android-folder-gallery) app, which needed reliable video recording with proper resolution selection:
+This fork was created for the [Android Folder Gallery](https://github.com/BenjaminKobjolke/android-folder-gallery) app, which needed direct control over camera resolutions for both photos and videos:
 
-- **Photo Mode:** Uses `availableCameraResolutions()` for high-quality photos
-- **Video Mode:** Uses `availableCameraVideoResolutions()` for reliable video recording
+### Why It Was Needed
+
+The app provides users with a **resolution picker** to choose their desired photo/video quality. With the official plugin's preset system, this was impossible because:
+
+1. **Can't show actual resolutions** - Users need to see "1920×1080" not "ResolutionPreset.high"
+2. **Can't guarantee video works** - Photo resolutions might fail when recording video
+3. **Can't offer precise control** - Users want to choose between 4K, 1080p, 720p explicitly
+
+### How This Fork Solves It
+
+- **Photo Mode:** Uses `availableCameraResolutions()` to show all available sensor resolutions
+- **Video Mode:** Uses `availableCameraVideoResolutions()` to show only encoder-safe resolutions
+- **User Control:** Users see actual pixel dimensions and can choose exactly what they want
+- **Reliability:** Video mode only shows resolutions guaranteed to work by CamcorderProfile
 
 ## Installation
 
