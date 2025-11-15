@@ -5,8 +5,10 @@
 package io.flutter.plugins.camera;
 
 import android.media.Image;
+import android.util.Log;
 import androidx.annotation.NonNull;
 import androidx.annotation.VisibleForTesting;
+import androidx.exifinterface.media.ExifInterface;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
@@ -15,6 +17,8 @@ import java.nio.ByteBuffer;
 
 /** Saves a JPEG {@link Image} into the specified {@link File}. */
 public class ImageSaver implements Runnable {
+
+  private static final String TAG = "ImageSaver";
 
   /** The JPEG image */
   private final Image image;
@@ -25,17 +29,22 @@ public class ImageSaver implements Runnable {
   /** Used to report the status of the save action. */
   private final Callback callback;
 
+  /** The JPEG orientation in degrees (0, 90, 180, 270) */
+  private final int jpegOrientation;
+
   /**
    * Creates an instance of the ImageSaver runnable
    *
    * @param image - The image to save
    * @param file - The file to save the image to
    * @param callback - The callback that is run on completion, or when an error is encountered.
+   * @param jpegOrientation - The JPEG orientation in degrees (0, 90, 180, or 270)
    */
-  ImageSaver(@NonNull Image image, @NonNull File file, @NonNull Callback callback) {
+  ImageSaver(@NonNull Image image, @NonNull File file, @NonNull Callback callback, int jpegOrientation) {
     this.image = image;
     this.file = file;
     this.callback = callback;
+    this.jpegOrientation = jpegOrientation;
   }
 
   @Override
@@ -45,8 +54,16 @@ public class ImageSaver implements Runnable {
     buffer.get(bytes);
     FileOutputStream output = null;
     try {
+      // Write the raw JPEG bytes to file
       output = FileOutputStreamFactory.create(file);
       output.write(bytes);
+      output.close();
+      output = null; // Mark as closed
+
+      Log.d(TAG, "[ORIENTATION_DEBUG] Image saved, now writing EXIF orientation: " + jpegOrientation + "°");
+
+      // Write EXIF orientation metadata
+      writeExifOrientation();
 
       callback.onComplete(file.getAbsolutePath());
 
@@ -61,6 +78,51 @@ public class ImageSaver implements Runnable {
           callback.onError("cameraAccess", e.getMessage());
         }
       }
+    }
+  }
+
+  /**
+   * Writes EXIF orientation metadata to the saved JPEG file.
+   * Converts JPEG orientation degrees (0, 90, 180, 270) to EXIF orientation values (1, 6, 3, 8).
+   */
+  private void writeExifOrientation() {
+    try {
+      ExifInterface exif = new ExifInterface(file.getAbsolutePath());
+
+      // Convert camera sensor orientation degrees to EXIF orientation value
+      // Camera sensor stores images in specific orientations regardless of device rotation
+      // Mapping based on empirical testing of raw image data (EXIF stripped):
+      // Sensor 0° (Portrait)         → Raw needs 90° CW  → EXIF 6 (Rotate 90° CW)
+      // Sensor 90° (Landscape Left)  → Raw needs 90° CCW → EXIF 8 (Rotate 270° CW)
+      // Sensor 180° (Portrait Down)  → Raw needs 90° CW  → EXIF 6 (Rotate 90° CW)
+      // Sensor 270° (Landscape Right)→ Raw needs 90° CW  → EXIF 6 (Rotate 90° CW)
+      int exifOrientation;
+      switch (jpegOrientation) {
+        case 0:
+          exifOrientation = ExifInterface.ORIENTATION_ROTATE_90;
+          break;
+        case 90:
+          exifOrientation = ExifInterface.ORIENTATION_ROTATE_270;
+          break;
+        case 180:
+          exifOrientation = ExifInterface.ORIENTATION_ROTATE_90;
+          break;
+        case 270:
+          exifOrientation = ExifInterface.ORIENTATION_ROTATE_90;
+          break;
+        default:
+          Log.w(TAG, "[ORIENTATION_DEBUG] ⚠️ Unknown JPEG orientation: " + jpegOrientation + "°, defaulting to ROTATE_90");
+          exifOrientation = ExifInterface.ORIENTATION_ROTATE_90;
+          break;
+      }
+
+      exif.setAttribute(ExifInterface.TAG_ORIENTATION, String.valueOf(exifOrientation));
+      exif.saveAttributes();
+
+      Log.d(TAG, "[ORIENTATION_DEBUG] ✅ EXIF orientation written: " + exifOrientation + " (from " + jpegOrientation + "°)");
+
+    } catch (IOException e) {
+      Log.e(TAG, "[ORIENTATION_DEBUG] ❌ Failed to write EXIF orientation: " + e.getMessage());
     }
   }
 

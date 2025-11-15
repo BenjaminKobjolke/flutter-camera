@@ -106,6 +106,12 @@ class Camera
    */
   private Integer overriddenSensorOrientation = null;
 
+  /**
+   * The calculated JPEG orientation for the current capture.
+   * Set in takePictureAfterPrecapture() and used in onImageAvailable() for EXIF writing.
+   */
+  private int currentJpegOrientation = 0;
+
   @VisibleForTesting final SurfaceTextureEntry flutterTexture;
   private final VideoCaptureSettings videoCaptureSettings;
   private final Context applicationContext;
@@ -736,6 +742,9 @@ class Camera
       android.util.Log.d("Camera", "[ORIENTATION_DEBUG] Using UI orientation: " + jpegOrientation + "°");
     }
 
+    // Store for later use in onImageAvailable() for EXIF writing
+    currentJpegOrientation = jpegOrientation;
+
     android.util.Log.d("Camera", "[ORIENTATION_DEBUG] ✅ JPEG_ORIENTATION set to: " + jpegOrientation + "°");
     stillBuilder.set(CaptureRequest.JPEG_ORIENTATION, jpegOrientation);
 
@@ -1281,7 +1290,8 @@ class Camera
               public void onError(@NonNull String errorCode, @NonNull String errorMessage) {
                 dartMessenger.error(flutterResult, errorCode, errorMessage, null);
               }
-            }));
+            },
+            currentJpegOrientation)); // Pass the calculated JPEG orientation for EXIF writing
     cameraCaptureCallback.setCameraState(CameraState.STATE_PREVIEW);
   }
 
