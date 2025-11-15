@@ -96,6 +96,7 @@ public class ImageSaver implements Runnable {
       // Sensor 90° (Landscape Left)  → Raw needs 90° CCW → EXIF 8 (Rotate 270° CW)
       // Sensor 180° (Portrait Down)  → Raw needs 90° CW  → EXIF 6 (Rotate 90° CW)
       // Sensor 270° (Landscape Right)→ Raw needs 90° CW  → EXIF 6 (Rotate 90° CW)
+      // Sensor -90° (Landscape Right, alternative)→ Raw needs 180° → EXIF 3 (Rotate 180°)
       int exifOrientation;
       switch (jpegOrientation) {
         case 0:
@@ -109,6 +110,9 @@ public class ImageSaver implements Runnable {
           break;
         case 270:
           exifOrientation = ExifInterface.ORIENTATION_ROTATE_90;
+          break;
+        case -90:
+          exifOrientation = ExifInterface.ORIENTATION_ROTATE_180;
           break;
         default:
           Log.w(TAG, "[ORIENTATION_DEBUG] ⚠️ Unknown JPEG orientation: " + jpegOrientation + "°, defaulting to ROTATE_90");
