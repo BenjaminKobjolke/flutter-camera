@@ -146,6 +146,15 @@ abstract class CameraPlatform extends PlatformInterface {
     throw UnimplementedError('unlockCaptureOrientation() is not implemented.');
   }
 
+  /// Sets the sensor-based orientation in degrees (0, 90, 180, 270).
+  ///
+  /// This passes the device's physical orientation detected by sensors
+  /// to the native camera for EXIF metadata. Should be called before
+  /// taking a picture to ensure correct orientation in EXIF data.
+  Future<void> setSensorOrientation(int cameraId, int degrees) {
+    throw UnimplementedError('setSensorOrientation() is not implemented.');
+  }
+
   /// Captures an image and returns the file where it was saved.
   Future<XFile> takePicture(int cameraId) {
     throw UnimplementedError('takePicture() is not implemented.');

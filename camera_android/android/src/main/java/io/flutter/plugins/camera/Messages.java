@@ -1138,6 +1138,14 @@ public class Messages {
      * This should be called only while video recording is active.
      */
     void setDescriptionWhileRecording(@NonNull String description);
+    /**
+     * Sets the sensor-based orientation in degrees (0, 90, 180, 270)
+     * to use for EXIF metadata instead of UI orientation.
+     *
+     * This should be called before taking a picture to ensure the EXIF
+     * orientation matches the device's physical tilt detected by sensors.
+     */
+    void setSensorOrientation(@NonNull Long degrees);
 
     /** The codec used by CameraApi. */
     static @NonNull MessageCodec<Object> getCodec() {
@@ -1851,6 +1859,29 @@ public class Messages {
                 String descriptionArg = (String) args.get(0);
                 try {
                   api.setDescriptionWhileRecording(descriptionArg);
+                  wrapped.add(0, null);
+                }
+ catch (Throwable exception) {
+                  wrapped = wrapError(exception);
+                }
+                reply.reply(wrapped);
+              });
+        } else {
+          channel.setMessageHandler(null);
+        }
+      }
+      {
+        BasicMessageChannel<Object> channel =
+            new BasicMessageChannel<>(
+                binaryMessenger, "dev.flutter.pigeon.camera_android.CameraApi.setSensorOrientation" + messageChannelSuffix, getCodec());
+        if (api != null) {
+          channel.setMessageHandler(
+              (message, reply) -> {
+                ArrayList<Object> wrapped = new ArrayList<>();
+                ArrayList<Object> args = (ArrayList<Object>) message;
+                Long degreesArg = (Long) args.get(0);
+                try {
+                  api.setSensorOrientation(degreesArg);
                   wrapped.add(0, null);
                 }
  catch (Throwable exception) {

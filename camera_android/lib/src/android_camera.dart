@@ -243,6 +243,11 @@ class AndroidCamera extends CameraPlatform {
   }
 
   @override
+  Future<void> setSensorOrientation(int cameraId, int degrees) async {
+    await _hostApi.setSensorOrientation(degrees);
+  }
+
+  @override
   Future<XFile> takePicture(int cameraId) async {
     final String path = await _hostApi.takePicture();
     return XFile(path);

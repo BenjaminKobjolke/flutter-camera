@@ -532,6 +532,11 @@ final class CameraApiImpl implements Messages.CameraApi {
   }
 
   @Override
+  public void setSensorOrientation(@NonNull Long degrees) {
+    camera.setSensorOrientation(degrees.intValue());
+  }
+
+  @Override
   public void pausePreview() {
     try {
       camera.pausePreview();

@@ -889,6 +889,27 @@ class CameraController extends ValueNotifier<CameraValue> {
     }
   }
 
+  /// Sets the sensor-based orientation for EXIF metadata.
+  ///
+  /// Pass the device's physical orientation in degrees (0, 90, 180, 270)
+  /// detected by sensors. This bypasses UI orientation and ensures EXIF
+  /// metadata matches the actual device tilt.
+  ///
+  /// Call this before [takePicture] to ensure correct EXIF orientation.
+  ///
+  /// Example:
+  /// ```dart
+  /// await controller.setSensorOrientation(cameraRotationDegrees);
+  /// final photo = await controller.takePicture();
+  /// ```
+  Future<void> setSensorOrientation(int degrees) async {
+    try {
+      await CameraPlatform.instance.setSensorOrientation(_cameraId, degrees);
+    } on PlatformException catch (e) {
+      throw CameraException(e.code, e.message);
+    }
+  }
+
   /// Sets the focus mode for taking pictures.
   Future<void> setFocusMode(FocusMode mode) async {
     try {

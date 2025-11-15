@@ -100,6 +100,12 @@ class Camera
    */
   @VisibleForTesting int initialCameraFacing;
 
+  /**
+   * Overridden sensor orientation in degrees (0, 90, 180, 270) from Flutter.
+   * When set, this value is used for JPEG_ORIENTATION instead of UI orientation.
+   */
+  private Integer overriddenSensorOrientation = null;
+
   @VisibleForTesting final SurfaceTextureEntry flutterTexture;
   private final VideoCaptureSettings videoCaptureSettings;
   private final Context applicationContext;
@@ -714,11 +720,24 @@ class Camera
     // Orientation.
     final PlatformChannel.DeviceOrientation lockedOrientation =
         cameraFeatures.getSensorOrientation().getLockedCaptureOrientation();
-    stillBuilder.set(
-        CaptureRequest.JPEG_ORIENTATION,
-        lockedOrientation == null
-            ? getDeviceOrientationManager().getPhotoOrientation()
-            : getDeviceOrientationManager().getPhotoOrientation(lockedOrientation));
+
+    // Determine JPEG orientation: prefer overridden sensor orientation from Flutter,
+    // then locked orientation, then auto-detected UI orientation
+    int jpegOrientation;
+    if (overriddenSensorOrientation != null) {
+      // Use sensor orientation from Flutter (bypasses UI orientation)
+      jpegOrientation = overriddenSensorOrientation;
+      android.util.Log.d("Camera", "[ORIENTATION_DEBUG] Using overridden sensor: " + jpegOrientation + "°");
+    } else if (lockedOrientation != null) {
+      jpegOrientation = getDeviceOrientationManager().getPhotoOrientation(lockedOrientation);
+      android.util.Log.d("Camera", "[ORIENTATION_DEBUG] Using locked orientation: " + jpegOrientation + "°");
+    } else {
+      jpegOrientation = getDeviceOrientationManager().getPhotoOrientation();
+      android.util.Log.d("Camera", "[ORIENTATION_DEBUG] Using UI orientation: " + jpegOrientation + "°");
+    }
+
+    android.util.Log.d("Camera", "[ORIENTATION_DEBUG] ✅ JPEG_ORIENTATION set to: " + jpegOrientation + "°");
+    stillBuilder.set(CaptureRequest.JPEG_ORIENTATION, jpegOrientation);
 
     CameraCaptureSession.CaptureCallback captureCallback =
         new CameraCaptureSession.CaptureCallback() {
@@ -1135,6 +1154,16 @@ class Camera
   /** Unlock capture orientation from dart. */
   public void unlockCaptureOrientation() {
     cameraFeatures.getSensorOrientation().unlockCaptureOrientation();
+  }
+
+  /**
+   * Sets the sensor-based orientation in degrees for EXIF metadata.
+   *
+   * @param degrees Orientation in degrees (0, 90, 180, 270) from Flutter sensor detection.
+   */
+  public void setSensorOrientation(int degrees) {
+    this.overriddenSensorOrientation = degrees;
+    android.util.Log.d("Camera", "[ORIENTATION_DEBUG] setSensorOrientation received: " + degrees + "°");
   }
 
   /** Pause the preview from dart. */

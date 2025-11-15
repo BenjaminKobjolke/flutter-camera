@@ -227,6 +227,13 @@ abstract class CameraApi {
   ///
   /// This should be called only while video recording is active.
   void setDescriptionWhileRecording(String description);
+
+  /// Sets the sensor-based orientation in degrees (0, 90, 180, 270)
+  /// to use for EXIF metadata instead of UI orientation.
+  ///
+  /// This should be called before taking a picture to ensure the EXIF
+  /// orientation matches the device's physical tilt detected by sensors.
+  void setSensorOrientation(int degrees);
 }
 
 /// Handles calls from native side to Dart that are not camera-specific.

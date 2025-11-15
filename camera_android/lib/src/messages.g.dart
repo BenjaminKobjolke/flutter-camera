@@ -1139,6 +1139,33 @@ class CameraApi {
       return;
     }
   }
+
+  /// Sets the sensor-based orientation in degrees (0, 90, 180, 270)
+  /// to use for EXIF metadata instead of UI orientation.
+  ///
+  /// This should be called before taking a picture to ensure the EXIF
+  /// orientation matches the device's physical tilt detected by sensors.
+  Future<void> setSensorOrientation(int degrees) async {
+    final String pigeonVar_channelName = 'dev.flutter.pigeon.camera_android.CameraApi.setSensorOrientation$pigeonVar_messageChannelSuffix';
+    final BasicMessageChannel<Object?> pigeonVar_channel = BasicMessageChannel<Object?>(
+      pigeonVar_channelName,
+      pigeonChannelCodec,
+      binaryMessenger: pigeonVar_binaryMessenger,
+    );
+    final List<Object?>? pigeonVar_replyList =
+        await pigeonVar_channel.send(<Object?>[degrees]) as List<Object?>?;
+    if (pigeonVar_replyList == null) {
+      throw _createConnectionError(pigeonVar_channelName);
+    } else if (pigeonVar_replyList.length > 1) {
+      throw PlatformException(
+        code: pigeonVar_replyList[0]! as String,
+        message: pigeonVar_replyList[1] as String?,
+        details: pigeonVar_replyList[2],
+      );
+    } else {
+      return;
+    }
+  }
 }
 
 /// Handles calls from native side to Dart that are not camera-specific.
