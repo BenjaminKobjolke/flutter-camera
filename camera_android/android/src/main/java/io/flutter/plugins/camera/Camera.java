@@ -654,6 +654,9 @@ class Camera
     final boolean isAutoFocusSupported = autoFocusFeature.checkIsSupported();
     if (isAutoFocusSupported && autoFocusFeature.getValue() == FocusMode.auto) {
       runPictureAutoFocus();
+    } else if (cameraFeatures.getExposureLock().getValue() == ExposureMode.locked) {
+      // Locked AE never reports the precapture state this callback waits for.
+      takePictureAfterPrecapture();
     } else {
       runPrecaptureSequence();
     }
@@ -755,6 +758,11 @@ class Camera
               @NonNull CameraCaptureSession session,
               @NonNull CaptureRequest request,
               @NonNull TotalCaptureResult result) {
+            if (cameraFeatures.getAutoFocus().getValue() == FocusMode.locked) {
+              // Canceling CONTROL_AF_MODE_AUTO drops the locked lens position.
+              Log.i(TAG, "Skipping autofocus unlock after capture in locked focus mode");
+              return;
+            }
             unlockAutoFocus();
           }
         };
