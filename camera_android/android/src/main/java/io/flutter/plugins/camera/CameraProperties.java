@@ -214,6 +214,14 @@ public interface CameraProperties {
   Size getSensorInfoPixelArraySize();
 
   /**
+   * Returns the SurfaceTexture output sizes from {@link
+   * android.hardware.camera2.CameraCharacteristics#SCALER_STREAM_CONFIGURATION_MAP}, or null
+   * when the stream configuration map is unavailable.
+   */
+  @Nullable
+  Size[] getPreviewOutputSizes();
+
+  /**
    * Returns the area of the image sensor which corresponds to active pixels prior to the
    * application of any geometric distortion correction.
    *

@@ -5,8 +5,6 @@
 package io.flutter.plugins.camera.features.resolution;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.any;
 import static org.mockito.Mockito.anyInt;
@@ -32,6 +30,14 @@ import org.robolectric.annotation.Config;
 @RunWith(RobolectricTestRunner.class)
 public class ResolutionFeatureTest {
   private static final String cameraName = "1";
+  private static final Size[] SUPPORTED_PREVIEW_SIZES = {
+    new Size(4000, 3000),
+    new Size(1920, 1080),
+    new Size(1440, 1080),
+    new Size(1280, 960),
+    new Size(1280, 720),
+    new Size(640, 480)
+  };
   private CamcorderProfile mockProfileLowLegacy;
   private EncoderProfiles mockProfileLow;
   private MockedStatic<CamcorderProfile> mockedStaticProfile;
@@ -130,7 +136,7 @@ public class ResolutionFeatureTest {
   public void getDebugName_shouldReturnTheNameOfTheFeature() {
     CameraProperties mockCameraProperties = mock(CameraProperties.class);
     ResolutionFeature resolutionFeature =
-        new ResolutionFeature(mockCameraProperties, ResolutionPreset.max, cameraName);
+        new ResolutionFeature(mockCameraProperties, new Size(1280, 720), cameraName);
 
     assertEquals("ResolutionFeature", resolutionFeature.getDebugName());
   }
@@ -139,29 +145,96 @@ public class ResolutionFeatureTest {
   public void getValue_shouldReturnInitialValueWhenNotSet() {
     CameraProperties mockCameraProperties = mock(CameraProperties.class);
     ResolutionFeature resolutionFeature =
-        new ResolutionFeature(mockCameraProperties, ResolutionPreset.max, cameraName);
+        new ResolutionFeature(mockCameraProperties, new Size(1280, 720), cameraName);
 
-    assertEquals(ResolutionPreset.max, resolutionFeature.getValue());
+    assertEquals(new Size(1280, 720), resolutionFeature.getValue());
   }
 
   @Test
   public void getValue_shouldEchoSetValue() {
     CameraProperties mockCameraProperties = mock(CameraProperties.class);
     ResolutionFeature resolutionFeature =
-        new ResolutionFeature(mockCameraProperties, ResolutionPreset.max, cameraName);
+        new ResolutionFeature(mockCameraProperties, new Size(1280, 720), cameraName);
 
-    resolutionFeature.setValue(ResolutionPreset.high);
+    resolutionFeature.setValue(new Size(1920, 1080));
 
-    assertEquals(ResolutionPreset.high, resolutionFeature.getValue());
+    assertEquals(new Size(1920, 1080), resolutionFeature.getValue());
   }
 
   @Test
   public void checkIsSupport_returnsTrue() {
     CameraProperties mockCameraProperties = mock(CameraProperties.class);
     ResolutionFeature resolutionFeature =
-        new ResolutionFeature(mockCameraProperties, ResolutionPreset.max, cameraName);
+        new ResolutionFeature(mockCameraProperties, new Size(1280, 720), cameraName);
 
     assertTrue(resolutionFeature.checkIsSupported());
+  }
+
+  @Test
+  public void customPreview_shouldChooseLargestMatchingFourByThreeSize() {
+    assertEquals(
+        new Size(1440, 1080),
+        ResolutionFeature.computeBestPreviewSize(new Size(4000, 3000), SUPPORTED_PREVIEW_SIZES));
+  }
+
+  @Test
+  public void customPreview_shouldChooseLargestMatchingSixteenByNineSize() {
+    assertEquals(
+        new Size(1920, 1080),
+        ResolutionFeature.computeBestPreviewSize(new Size(3840, 2160), SUPPORTED_PREVIEW_SIZES));
+  }
+
+  @Test
+  public void customPreview_shouldAcceptNearlyMatchingAspectRatio() {
+    assertEquals(
+        new Size(1920, 1080),
+        ResolutionFeature.computeBestPreviewSize(new Size(4000, 2252), SUPPORTED_PREVIEW_SIZES));
+  }
+
+  @Test
+  public void customPreview_shouldChooseClosestShapeWhenNoShapeMatches() {
+    Size[] sizes = {new Size(1920, 1080), new Size(1440, 1080), new Size(1280, 720)};
+    assertEquals(
+        new Size(1920, 1080),
+        ResolutionFeature.computeBestPreviewSize(new Size(4000, 1800), sizes));
+  }
+
+  @Test
+  public void customPreview_shouldUseSupportedSizeWhenCaptureIsSmall() {
+    assertEquals(
+        new Size(1440, 1080),
+        ResolutionFeature.computeBestPreviewSize(new Size(640, 480), SUPPORTED_PREVIEW_SIZES));
+  }
+
+  @Test
+  public void customPreview_shouldKeepCaptureSizeWhenSupportedSizesAreNull() {
+    Size capture = new Size(4000, 3000);
+    assertEquals(capture, ResolutionFeature.computeBestPreviewSize(capture, null));
+  }
+
+  @Test
+  public void customPreview_shouldKeepCaptureSizeWhenSupportedSizesAreEmpty() {
+    Size capture = new Size(4000, 3000);
+    assertEquals(capture, ResolutionFeature.computeBestPreviewSize(capture, new Size[0]));
+  }
+
+  @Test
+  public void customPreview_shouldKeepCaptureSizeWhenNothingFitsTheCap() {
+    Size capture = new Size(4000, 3000);
+    assertEquals(
+        capture, ResolutionFeature.computeBestPreviewSize(capture, new Size[] {capture}));
+  }
+
+  @Test
+  public void customPreview_shouldKeepCaptureSizeAndUseSelectedPreviewSize() {
+    CameraProperties properties = mock(CameraProperties.class);
+    when(properties.getPreviewOutputSizes()).thenReturn(SUPPORTED_PREVIEW_SIZES);
+
+    ResolutionFeature feature =
+        new ResolutionFeature(properties, new Size(4000, 3000), cameraName);
+
+    assertEquals(new Size(4000, 3000), feature.getCaptureSize());
+    assertEquals(new Size(1440, 1080), feature.getPreviewSize());
   }
 
   @Config(maxSdk = 30)
@@ -382,48 +455,4 @@ public class ResolutionFeatureTest {
     }
   }
 
-  @Config(minSdk = 31)
-  @Test
-  public void resolutionFeatureShouldUseLegacyBehaviorWhenEncoderProfilesNull() {
-    before();
-    try (MockedStatic<ResolutionFeature> mockedResolutionFeature =
-        mockStatic(ResolutionFeature.class)) {
-      mockedResolutionFeature
-          .when(
-              () ->
-                  ResolutionFeature.getBestAvailableCamcorderProfileForResolutionPreset(
-                      anyInt(), any(ResolutionPreset.class)))
-          .thenAnswer(
-              (Answer<EncoderProfiles>)
-                  invocation -> {
-                    EncoderProfiles mockEncoderProfiles = mock(EncoderProfiles.class);
-                    List<EncoderProfiles.VideoProfile> videoProfiles =
-                        new ArrayList<EncoderProfiles.VideoProfile>() {
-                          {
-                            add(null);
-                          }
-                        };
-                    when(mockEncoderProfiles.getVideoProfiles()).thenReturn(videoProfiles);
-                    return mockEncoderProfiles;
-                  });
-      mockedResolutionFeature
-          .when(
-              () ->
-                  ResolutionFeature.getBestAvailableCamcorderProfileForResolutionPresetLegacy(
-                      anyInt(), any(ResolutionPreset.class)))
-          .thenAnswer(
-              (Answer<CamcorderProfile>)
-                  invocation -> {
-                    CamcorderProfile mockCamcorderProfile = mock(CamcorderProfile.class);
-                    return mockCamcorderProfile;
-                  });
-
-      CameraProperties mockCameraProperties = mock(CameraProperties.class);
-      ResolutionFeature resolutionFeature =
-          new ResolutionFeature(mockCameraProperties, ResolutionPreset.max, cameraName);
-
-      assertNotNull(resolutionFeature.getRecordingProfileLegacy());
-      assertNull(resolutionFeature.getRecordingProfile());
-    }
-  }
 }

@@ -7,6 +7,7 @@ package io.flutter.plugins.camera;
 import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
 import static org.junit.Assert.fail;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
@@ -17,6 +18,8 @@ import android.graphics.Rect;
 import android.hardware.camera2.CameraAccessException;
 import android.hardware.camera2.CameraCharacteristics;
 import android.hardware.camera2.CameraManager;
+import android.hardware.camera2.params.StreamConfigurationMap;
+import android.graphics.SurfaceTexture;
 import android.util.Range;
 import android.util.Rational;
 import android.util.Size;
@@ -44,6 +47,26 @@ public class CameraPropertiesImplTest {
   public void ctor_shouldReturnValidInstance() throws CameraAccessException {
     verify(mockCameraManager, times(1)).getCameraCharacteristics(CAMERA_NAME);
     assertNotNull(cameraProperties);
+  }
+
+  @Test
+  public void getPreviewOutputSizes_shouldReturnSurfaceTextureSizes() {
+    StreamConfigurationMap map = mock(StreamConfigurationMap.class);
+    Size[] expected = {new Size(1920, 1080), new Size(1440, 1080)};
+    when(mockCharacteristics.get(CameraCharacteristics.SCALER_STREAM_CONFIGURATION_MAP))
+        .thenReturn(map);
+    when(map.getOutputSizes(SurfaceTexture.class)).thenReturn(expected);
+
+    assertArrayEquals(expected, cameraProperties.getPreviewOutputSizes());
+    verify(map).getOutputSizes(SurfaceTexture.class);
+  }
+
+  @Test
+  public void getPreviewOutputSizes_shouldReturnNullWhenConfigurationMapIsMissing() {
+    when(mockCharacteristics.get(CameraCharacteristics.SCALER_STREAM_CONFIGURATION_MAP))
+        .thenReturn(null);
+
+    assertNull(cameraProperties.getPreviewOutputSizes());
   }
 
   @Test

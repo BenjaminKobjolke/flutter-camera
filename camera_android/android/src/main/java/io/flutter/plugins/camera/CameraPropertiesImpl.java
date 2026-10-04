@@ -5,9 +5,11 @@
 package io.flutter.plugins.camera;
 
 import android.graphics.Rect;
+import android.graphics.SurfaceTexture;
 import android.hardware.camera2.CameraAccessException;
 import android.hardware.camera2.CameraCharacteristics;
 import android.hardware.camera2.CameraManager;
+import android.hardware.camera2.params.StreamConfigurationMap;
 import android.os.Build.VERSION_CODES;
 import android.util.Range;
 import android.util.Rational;
@@ -138,6 +140,14 @@ public class CameraPropertiesImpl implements CameraProperties {
   @Override
   public Size getSensorInfoPixelArraySize() {
     return cameraCharacteristics.get(CameraCharacteristics.SENSOR_INFO_PIXEL_ARRAY_SIZE);
+  }
+
+  @Nullable
+  @Override
+  public Size[] getPreviewOutputSizes() {
+    StreamConfigurationMap map =
+        cameraCharacteristics.get(CameraCharacteristics.SCALER_STREAM_CONFIGURATION_MAP);
+    return map == null ? null : map.getOutputSizes(SurfaceTexture.class);
   }
 
   @NonNull

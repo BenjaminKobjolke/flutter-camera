@@ -26,6 +26,8 @@ import java.util.List;
  * using the {@link android.hardware.camera2} API.
  */
 public class ResolutionFeature extends CameraFeature<Size> {
+  // Camera2 supports a 1080p preview alongside a maximum-size JPEG; sizes use sensor orientation.
+  static final Size MAX_PREVIEW_SIZE = new Size(1920, 1080);
   @Nullable private Size captureSize;
   @Nullable private Size previewSize;
   private CamcorderProfile recordingProfileLegacy;
@@ -144,17 +146,38 @@ public class ResolutionFeature extends CameraFeature<Size> {
     return new Size(profile.videoFrameWidth, profile.videoFrameHeight);
   }
 
-  /**
-   * Computes the best preview size based on capture resolution dimensions.
-   * Simply returns the provided dimensions as the preview size.
-   *
-   * @param width The width of the capture resolution.
-   * @param height The height of the capture resolution.
-   * @return The computed preview size.
-   */
+  /** Selects the largest supported preview size with the closest shape within the 1080p cap. */
   @VisibleForTesting
-  static Size computeBestPreviewSize(int width, int height) {
-    return new Size(width, height);
+  static Size computeBestPreviewSize(Size captureSize, @Nullable Size[] supportedSizes) {
+    if (supportedSizes == null || supportedSizes.length == 0) {
+      return captureSize;
+    }
+
+    double captureRatio = (double) captureSize.getWidth() / captureSize.getHeight();
+    double smallestDifference = Double.MAX_VALUE;
+    for (Size size : supportedSizes) {
+      if (size.getWidth() <= MAX_PREVIEW_SIZE.getWidth()
+          && size.getHeight() <= MAX_PREVIEW_SIZE.getHeight()) {
+        double difference = Math.abs((double) size.getWidth() / size.getHeight() - captureRatio);
+        smallestDifference = Math.min(smallestDifference, difference);
+      }
+    }
+
+    Size bestSize = null;
+    long largestArea = 0;
+    for (Size size : supportedSizes) {
+      if (size.getWidth() <= MAX_PREVIEW_SIZE.getWidth()
+          && size.getHeight() <= MAX_PREVIEW_SIZE.getHeight()
+          && Math.abs((double) size.getWidth() / size.getHeight() - captureRatio)
+              <= smallestDifference + 0.01) {
+        long area = (long) size.getWidth() * size.getHeight();
+        if (area > largestArea) {
+          bestSize = size;
+          largestArea = area;
+        }
+      }
+    }
+    return bestSize == null ? captureSize : bestSize;
   }
 
   /**
@@ -283,7 +306,8 @@ public class ResolutionFeature extends CameraFeature<Size> {
 
     // Directly use the provided resolution
     this.captureSize = resolution;
-    this.previewSize = computeBestPreviewSize(resolution.getWidth(), resolution.getHeight());
+    this.previewSize =
+        computeBestPreviewSize(resolution, cameraProperties.getPreviewOutputSizes());
 
     // Find the best matching CamcorderProfile for video recording
     // This is critical for video recording to work with custom resolutions
