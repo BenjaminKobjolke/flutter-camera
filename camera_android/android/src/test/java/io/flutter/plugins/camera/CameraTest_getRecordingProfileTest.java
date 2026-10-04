@@ -17,6 +17,7 @@ import android.media.CamcorderProfile;
 import android.media.EncoderProfiles;
 import android.os.Handler;
 import android.os.HandlerThread;
+import android.util.Size;
 import androidx.annotation.NonNull;
 import io.flutter.plugins.camera.features.CameraFeatureFactory;
 import io.flutter.plugins.camera.features.autofocus.AutoFocusFeature;
@@ -28,7 +29,6 @@ import io.flutter.plugins.camera.features.focuspoint.FocusPointFeature;
 import io.flutter.plugins.camera.features.fpsrange.FpsRangeFeature;
 import io.flutter.plugins.camera.features.noisereduction.NoiseReductionFeature;
 import io.flutter.plugins.camera.features.resolution.ResolutionFeature;
-import io.flutter.plugins.camera.features.resolution.ResolutionPreset;
 import io.flutter.plugins.camera.features.sensororientation.SensorOrientationFeature;
 import io.flutter.plugins.camera.features.zoomlevel.ZoomLevelFeature;
 import io.flutter.view.TextureRegistry;
@@ -62,7 +62,7 @@ public class CameraTest_getRecordingProfileTest {
     final Activity mockActivity = mock(Activity.class);
     final TextureRegistry.SurfaceTextureEntry mockFlutterTexture =
         mock(TextureRegistry.SurfaceTextureEntry.class);
-    final ResolutionPreset resolutionPreset = ResolutionPreset.high;
+    final Size resolution = new Size(1280, 720);
     final boolean enableAudio = false;
 
     camera =
@@ -72,7 +72,7 @@ public class CameraTest_getRecordingProfileTest {
             mockCameraFeatureFactory,
             mockDartMessenger,
             mockCameraProperties,
-            new Camera.VideoCaptureSettings(resolutionPreset, enableAudio));
+              new Camera.VideoCaptureSettings(resolution, enableAudio));
   }
 
   @Config(maxSdk = 30)
@@ -158,7 +158,7 @@ public class CameraTest_getRecordingProfileTest {
     @Override
     public ResolutionFeature createResolutionFeature(
         @NonNull CameraProperties cameraProperties,
-        ResolutionPreset initialSetting,
+        Size initialSetting,
         String cameraName) {
       return mockResolutionFeature;
     }
