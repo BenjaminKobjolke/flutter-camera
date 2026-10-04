@@ -121,7 +121,17 @@ Future<void> setupCamera() async {
 
 ## Implementation Details
 
+For a custom photo resolution, the live preview uses the largest supported size within
+1920 × 1080 that has the closest shape to the photo. The photo capture resolution stays
+at the requested size.
+
 ### Changes Made
+
+Direct capture with locked focus and exposure: when both modes are locked, Android skips the
+precapture wait and submits the still request immediately. Automatic exposure retains its normal
+metering sequence, including flash shots.
+With focus mode locked, a still capture no longer cancels autofocus, so the lens position stays
+until the next focus point or until focus mode returns to auto.
 
 1. **Pigeon API Definition** (`camera_android/pigeons/messages.dart`)
    - Added `getAvailableVideoResolutions()` method to CameraApi interface
