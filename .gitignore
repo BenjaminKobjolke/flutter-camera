@@ -118,3 +118,17 @@ app.*.symbols
 !/packages/flutter_tools/test/data/dart_dependencies_test/**/.packages
 !/dev/ci/**/Gemfile.lock
 nul
+
+# Claude / agent working files
+/.claude/
+/claude-plans/
+/PLAN.md
+/PLAN_*.md
+/HANDOFF.md
+/tickets/
+
+# Tool output / scratch artifacts
+/graphify-out/
+/code_analysis_results/
+/.reasonix/
+tmp/commit_msg.tmp
