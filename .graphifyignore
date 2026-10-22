@@ -1,0 +1,12 @@
+*.md
+AUTHORS
+LICENSE
+*.lock
+*.yaml
+*.json
+tools/
+tickets/
+.claude/
+graphify-out/
+**/build/
+**/.dart_tool/
