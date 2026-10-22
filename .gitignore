@@ -126,9 +126,14 @@ nul
 /PLAN_*.md
 /HANDOFF.md
 /tickets/
+/coding-rules.json
 
 # Tool output / scratch artifacts
 /graphify-out/
+/camera/graphify-out/
+/camera_android/graphify-out/
+/camera_android_camerax/graphify-out/
+/camera_platform_interface/graphify-out/
 /code_analysis_results/
 /.reasonix/
 tmp/commit_msg.tmp
