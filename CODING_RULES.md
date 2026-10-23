@@ -1,7 +1,7 @@
 <!-- Managed by /coding-rules:apply — do not edit rule blocks by hand -->
 
 # Version
-13
+14
 
 Increase this version number whenever this rule file changes.
 
@@ -13,6 +13,7 @@ corresponding `*_RULES.md` files.
 ---
 
 ## Keep CODING_RULES.md in Sync
+<!-- steps: code -->
 
 When working on a project, copy all relevant rules into the project's `CODING_RULES.md` file
 (project root). The project's `CLAUDE.md` carries only a small versioned pointer block that
@@ -22,6 +23,9 @@ mandates reading `CODING_RULES.md` before code work — never the full rules, an
 - Always include all rules from `COMMON_RULES.md` and `IMPLEMENTATION_FLOW.md`.
   `COMMON_RULES.md` is copied into the project's `CODING_RULES.md`;
   `IMPLEMENTATION_FLOW.md` is copied into the project's own `IMPLEMENTATION_FLOW.md`
+- `apply` also writes `CODING_RULES_PLAN.md`, `CODING_RULES_REVIEW.md` and
+  `CODING_RULES_CODE.md` from the same rule blocks. Use `<!-- steps: plan, review, code -->`
+  under a heading to limit its section.
 - Also include applicable language-specific, project-type, and supplemental rule files
   (see `PROJECT_TYPES.md` for the project-type overview)
 - Include optional addon rule files only when the user has opted in to that addon
@@ -117,6 +121,7 @@ components work correctly together and catch issues that unit tests alone cannot
 ---
 
 ## Test Runner Scripts
+<!-- steps: review, code -->
 
 Every project must provide the following batch files in the `tools/` directory:
 
@@ -148,6 +153,7 @@ or use the runner's own log-file option.
 ---
 
 ## No `pause` in Batch Files
+<!-- steps: review, code -->
 
 Batch files must never contain a `pause` line. `pause` waits for a keypress, so any bat that has one
 hangs forever when run by CI, another bat, or an AI agent. End with an explicit `exit /b <code>`
@@ -188,6 +194,7 @@ from being re-invented in every new project.
 ---
 
 ## New Projects Start From a Template
+<!-- steps: plan -->
 
 Before creating a new project (an API, an app, a tool — anything that gets its own folder),
 ask the user whether a template project exists for that kind of project. Never scaffold from
@@ -531,7 +538,7 @@ the wrong side of **No God Classes**.
   fields.
 
 # Version
-14
+15
 
 Increase this version number whenever this rule file changes.
 
@@ -554,6 +561,7 @@ See `COMMON_RULES.md` for rules that apply to all languages.
 6. Follow SOLID principles (Single Responsibility, Open/Closed, Liskov Substitution, Interface Segregation, Dependency Inversion)
 
 ## Documentation Comments
+<!-- steps: review, code -->
 
 Use `///` doc comments on all public classes, methods, and properties:
 
@@ -684,6 +692,7 @@ data in a mixin, it should probably be a class you inject instead.
 ---
 
 ## Flutter Version Management
+<!-- steps: code -->
 
 Use FVM (Flutter Version Manager) for all projects. Create `.fvmrc` in the project root:
 
@@ -723,6 +732,7 @@ applied to dependencies instead of scripts.
 ---
 
 ## Pin Android Dependencies Declared as Version Ranges
+<!-- steps: review, code -->
 
 Some plugins' Android SDKs declare dependencies as **version ranges** (seen: OneSignal Android
 SDK 5.10.0 via `onesignal_flutter` 5.6.10). For a range Gradle must list the available versions
@@ -791,6 +801,7 @@ Rules:
 # Essential Rules
 
 ## 1) Use `pubspec.yaml` as the single source of truth
+<!-- steps: review, code -->
 
 Keep all dependencies and configuration in `pubspec.yaml`.
 
@@ -803,6 +814,7 @@ Recommended baseline:
 ---
 
 ## 2) Enforce linting and formatting
+<!-- steps: review, code -->
 
 Use the standard Flutter analyzer:
 
@@ -1086,7 +1098,7 @@ Reinforces core principle #1 (Composition over inheritance) and
 ```
 
 # Version
-14
+15
 
 Increase this version number whenever this rule file changes.
 
@@ -1109,6 +1121,7 @@ assets — forcing the LLM pass. **Always scope to the code dir; never build the
 Setup instructions live in the coding-rules plugin at `graphify_setup_files/SETUP.md`.
 
 ## Folder layout (know which is which)
+<!-- steps: code -->
 
 - `graphify-out/` at the **project root** = the **live graph** (`graph.json`, `GRAPH_REPORT.md`,
   `graph.html`). The only one queries read. Keep it `directed=True`.
@@ -1139,6 +1152,7 @@ Setup instructions live in the coding-rules plugin at `graphify_setup_files/SETU
   query/path/explain do not surface enough context.
 
 ## Manual refresh bat (`tools/graphify_update.bat`)
+<!-- steps: code -->
 
 Copied from the `graphify_update.bat` template beside this addon, adjusted (`CODE_DIRS`).
 Run it from anywhere — it `pushd`es to the repo root itself.
@@ -1153,6 +1167,7 @@ Run it from anywhere — it `pushd`es to the repo root itself.
   wired up?" check after cloning, a dependency change, or a graphify upgrade.
 
 ## In-tree vendored code — exclude it, scoping alone won't
+<!-- steps: code -->
 
 `--directed`-scoping the build to `<code-dir>` keeps external `vendor/`/`node_modules/` out
 automatically, but a **committed** third-party library living *inside* `<code-dir>` (a bundled
