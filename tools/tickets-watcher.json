@@ -66,5 +66,6 @@
     "cmd /c \"cd /d camera_android_camerax/example && fvm flutter analyze\"": {
       "test": "failed"
     }
-  }
+  },
+  "analysis_code_quality_answered": true
 }
