@@ -67,15 +67,12 @@ if not exist "graphify-out\graph.json" (
   exit /b 1
 )
 REM Report directed flag + node count of the LIVE root graph (should be directed:True).
-if exist "graphify-out\.graphify_python" (
-  set /p GPY2=<graphify-out\.graphify_python
-  "!GPY2!" -c "import json,sys;d=json.load(open('graphify-out/graph.json',encoding='utf-8'));print('directed:',d.get('directed'),'  nodes:',len(d.get('nodes',[])));sys.exit(0 if d.get('directed') is True else 'ERROR: graphify-out/graph.json must have directed: true')"
-  if errorlevel 1 (
-    echo ERROR: graphify smoke test failed.
-    popd
-    endlocal
-    exit /b 1
-  )
+powershell -NoProfile -Command "$ErrorActionPreference='Stop'; try { $graph=Get-Content 'graphify-out/graph.json' -Raw | ConvertFrom-Json; Write-Output ('directed: {0}  nodes: {1}' -f $graph.directed,$graph.nodes.Count); if ($graph.directed -isnot [bool] -or -not $graph.directed) { exit 1 } } catch { Write-Error $_; exit 1 }"
+if errorlevel 1 (
+  echo ERROR: graphify smoke test failed.
+  popd
+  endlocal
+  exit /b 1
 )
 echo.
 echo --- god nodes (top 5) ---
