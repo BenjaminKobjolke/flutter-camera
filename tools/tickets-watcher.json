@@ -3,6 +3,9 @@
     "TICKETS_WATCHER_COMMANDS.md": 2
   },
   "command_check_scripts": [
+    "analyze_changed_and_new_files.bat",
+    "analyze_code_config.bat",
+    "analyze_code_config.example.bat",
     "graphify_update.bat"
   ],
   "analysis_commands": [
@@ -18,11 +21,16 @@
     "cmd /c \"cd /d camera_android/example && fvm flutter analyze\"",
     "cmd /c \"cd /d camera_platform_interface && fvm flutter analyze\"",
     "cmd /c \"cd /d camera/example && fvm flutter analyze\"",
-    "cmd /c \"cd /d camera_android_camerax/example && fvm flutter analyze\""
+    "cmd /c \"cd /d camera_android_camerax/example && fvm flutter analyze\"",
+    "tools\\analyze_changed_and_new_files.bat"
   ],
+  "analysis_command_kinds": {
+    "tools\\analyze_changed_and_new_files.bat": "code_quality"
+  },
   "analysis_commands_seen": {
     "scripts": [
-      "graphify_update.bat"
+      "graphify_update.bat",
+      "analyze_changed_and_new_files.bat"
     ],
     "tests": true
   },
@@ -65,6 +73,9 @@
     },
     "cmd /c \"cd /d camera_android_camerax/example && fvm flutter analyze\"": {
       "test": "failed"
+    },
+    "tools\\analyze_changed_and_new_files.bat": {
+      "code_quality": "green"
     }
   },
   "analysis_code_quality_answered": true

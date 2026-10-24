@@ -135,5 +135,6 @@ nul
 /camera_android_camerax/graphify-out/
 /camera_platform_interface/graphify-out/
 /code_analysis_results/
+/tools/analyze_code_config.bat
 /.reasonix/
 tmp/commit_msg.tmp
