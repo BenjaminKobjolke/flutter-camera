@@ -5,11 +5,66 @@
   "command_check_scripts": [
     "graphify_update.bat"
   ],
-  "analysis_commands": [],
+  "analysis_commands": [
+    "cmd /c \"cd /d camera && fvm flutter test --timeout 120s --reporter expanded\"",
+    "cmd /c \"cd /d camera_android && fvm flutter test --timeout 120s --reporter expanded\"",
+    "cmd /c \"cd /d camera_android_camerax && fvm flutter test --timeout 120s --reporter expanded\"",
+    "cmd /c \"cd /d camera_platform_interface && fvm flutter test --timeout 120s --reporter expanded\"",
+    "cmd /c \"cd /d camera/example && fvm flutter test --timeout 120s --reporter expanded\"",
+    "cmd /c \"cd /d camera_android_camerax/example && fvm flutter test --timeout 120s --reporter expanded\"",
+    "cmd /c \"cd /d camera && fvm flutter analyze\"",
+    "cmd /c \"cd /d camera_android && fvm flutter analyze\"",
+    "cmd /c \"cd /d camera_android_camerax && fvm flutter analyze\"",
+    "cmd /c \"cd /d camera_android/example && fvm flutter analyze\"",
+    "cmd /c \"cd /d camera_platform_interface && fvm flutter analyze\"",
+    "cmd /c \"cd /d camera/example && fvm flutter analyze\"",
+    "cmd /c \"cd /d camera_android_camerax/example && fvm flutter analyze\""
+  ],
   "analysis_commands_seen": {
     "scripts": [
       "graphify_update.bat"
     ],
     "tests": true
+  },
+  "analysis_command_states": {
+    "cmd /c \"cd /d camera && fvm flutter test --timeout 120s --reporter expanded\"": {
+      "test": "failed"
+    },
+    "cmd /c \"cd /d camera_android && fvm flutter test --timeout 120s --reporter expanded\"": {
+      "test": "failed"
+    },
+    "cmd /c \"cd /d camera_android_camerax && fvm flutter test --timeout 120s --reporter expanded\"": {
+      "test": "failed"
+    },
+    "cmd /c \"cd /d camera_platform_interface && fvm flutter test --timeout 120s --reporter expanded\"": {
+      "test": "failed"
+    },
+    "cmd /c \"cd /d camera/example && fvm flutter test --timeout 120s --reporter expanded\"": {
+      "test": "failed"
+    },
+    "cmd /c \"cd /d camera_android_camerax/example && fvm flutter test --timeout 120s --reporter expanded\"": {
+      "test": "failed"
+    },
+    "cmd /c \"cd /d camera && fvm flutter analyze\"": {
+      "test": "failed"
+    },
+    "cmd /c \"cd /d camera_android && fvm flutter analyze\"": {
+      "test": "failed"
+    },
+    "cmd /c \"cd /d camera_android_camerax && fvm flutter analyze\"": {
+      "test": "failed"
+    },
+    "cmd /c \"cd /d camera_android/example && fvm flutter analyze\"": {
+      "test": "failed"
+    },
+    "cmd /c \"cd /d camera_platform_interface && fvm flutter analyze\"": {
+      "test": "failed"
+    },
+    "cmd /c \"cd /d camera/example && fvm flutter analyze\"": {
+      "test": "failed"
+    },
+    "cmd /c \"cd /d camera_android_camerax/example && fvm flutter analyze\"": {
+      "test": "failed"
+    }
   }
 }
