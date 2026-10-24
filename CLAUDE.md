@@ -31,3 +31,13 @@ Do not inline rules back into this file and do not use `@import` for either file
 they are intentionally referenced, not imported.
 
 This project's code directories are camera/, camera_android/, camera_android_camerax/ and camera_platform_interface/.
+
+## Post-Implementation Code Analysis
+
+After implementing a feature, finishing a plan, or fixing a bug, run the changed-files analyzer and fix every reported issue before considering the work complete:
+
+```powershell
+cmd /c ".\tools\analyze_changed_and_new_files.bat"
+```
+
+The analyzer uses `--only-changed`, so it reports findings for new and modified files relative to Git `HEAD` (including untracked files). Use a full analyzer run for explicit project audits or when the working tree is clean.
