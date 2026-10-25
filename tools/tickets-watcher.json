@@ -36,22 +36,22 @@
   },
   "analysis_command_states": {
     "cmd /c \"cd /d camera && fvm flutter test --timeout 120s --reporter expanded\"": {
-      "test": "failed"
+      "test": "green"
     },
     "cmd /c \"cd /d camera_android && fvm flutter test --timeout 120s --reporter expanded\"": {
-      "test": "failed"
+      "test": "green"
     },
     "cmd /c \"cd /d camera_android_camerax && fvm flutter test --timeout 120s --reporter expanded\"": {
-      "test": "failed"
+      "test": "green"
     },
     "cmd /c \"cd /d camera_platform_interface && fvm flutter test --timeout 120s --reporter expanded\"": {
-      "test": "failed"
+      "test": "green"
     },
     "cmd /c \"cd /d camera/example && fvm flutter test --timeout 120s --reporter expanded\"": {
-      "test": "failed"
+      "test": "green"
     },
     "cmd /c \"cd /d camera_android_camerax/example && fvm flutter test --timeout 120s --reporter expanded\"": {
-      "test": "failed"
+      "test": "green"
     },
     "cmd /c \"cd /d camera && fvm flutter analyze\"": {
       "test": "failed"
@@ -66,7 +66,7 @@
       "test": "failed"
     },
     "cmd /c \"cd /d camera_platform_interface && fvm flutter analyze\"": {
-      "test": "failed"
+      "test": "green"
     },
     "cmd /c \"cd /d camera/example && fvm flutter analyze\"": {
       "test": "failed"
