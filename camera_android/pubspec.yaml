@@ -20,7 +20,7 @@ flutter:
 
 dependencies:
   camera_platform_interface:
-    path: ../camera_platform_interface
+    ^2.12.0
   flutter:
     sdk: flutter
   flutter_plugin_android_lifecycle: ^2.0.2
@@ -34,6 +34,10 @@ dev_dependencies:
   leak_tracker_flutter_testing: any
   mockito: ^5.4.4
   pigeon: ^22.4.1
+
+dependency_overrides:
+  camera_platform_interface:
+    path: ../camera_platform_interface
 
 topics:
   - camera

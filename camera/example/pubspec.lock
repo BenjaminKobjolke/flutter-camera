@@ -97,14 +97,14 @@ packages:
     source: path
     version: "0.11.3"
   camera_android:
-    dependency: transitive
+    dependency: "direct overridden"
     description:
       path: "../../camera_android"
       relative: true
     source: path
     version: "0.10.10+11"
   camera_platform_interface:
-    dependency: transitive
+    dependency: "direct overridden"
     description:
       path: "../../camera_platform_interface"
       relative: true
