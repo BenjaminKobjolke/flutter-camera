@@ -1,13 +1,10 @@
 # Miscellaneous
 *.class
-*.lock
 *.log
 *.pyc
 *.swp
 .buildlog/
 .history
-
-
 
 # Flutter repo-specific
 /bin/cache/
@@ -138,3 +135,6 @@ nul
 /tools/analyze_code_config.bat
 /.reasonix/
 tmp/commit_msg.tmp
+
+# FVM Version Cache
+.fvm/
