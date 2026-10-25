@@ -1749,7 +1749,7 @@ class Observer extends PigeonInternalProxyApiBaseClass {
             arg_pigeon_instance != null,
             'Argument for dev.flutter.pigeon.camera_android_camerax.Observer.onChanged was null, expected non-null Observer.',
           );
-          final Object? arg_value = (args[1] as Object?);
+          final Object? arg_value = args[1];
           assert(
             arg_value != null,
             'Argument for dev.flutter.pigeon.camera_android_camerax.Observer.onChanged was null, expected non-null Object.',
@@ -6804,9 +6804,6 @@ class ImageProxyUtils extends PigeonInternalProxyApiBaseClass {
     super.pigeon_binaryMessenger,
     super.pigeon_instanceManager,
   });
-
-  late final _PigeonInternalProxyApiBaseCodec _pigeonVar_codecImageProxyUtils =
-      _PigeonInternalProxyApiBaseCodec(pigeon_instanceManager);
 
   static void pigeon_setUpMessageHandlers({
     bool pigeon_clearHandlers = false,
