@@ -891,7 +891,9 @@ class _CameraExampleHomeState extends State<CameraExampleHome>
     }
 
     try {
-      await cameraController.startVideoRecording();
+      await cameraController.startVideoRecording(
+        enablePersistentRecording: true,
+      );
     } on CameraException catch (e) {
       _showCameraException(e);
       return;
@@ -906,7 +908,7 @@ class _CameraExampleHomeState extends State<CameraExampleHome>
     }
 
     try {
-      return cameraController.stopVideoRecording();
+      return await cameraController.stopVideoRecording();
     } on CameraException catch (e) {
       _showCameraException(e);
       return null;
