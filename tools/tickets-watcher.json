@@ -1,6 +1,6 @@
 {
   "files": {
-    "TICKETS_WATCHER_COMMANDS.md": 2
+    "TICKETS_WATCHER_COMMANDS.md": 3
   },
   "command_check_scripts": [
     "analyze_changed_and_new_files.bat",
@@ -54,29 +54,30 @@
       "test": "green"
     },
     "cmd /c \"cd /d camera && fvm flutter analyze\"": {
-      "test": "failed"
+      "test": "green"
     },
     "cmd /c \"cd /d camera_android && fvm flutter analyze\"": {
-      "test": "failed"
+      "test": "green"
     },
     "cmd /c \"cd /d camera_android_camerax && fvm flutter analyze\"": {
-      "test": "failed"
+      "test": "green"
     },
     "cmd /c \"cd /d camera_android/example && fvm flutter analyze\"": {
-      "test": "failed"
+      "test": "green"
     },
     "cmd /c \"cd /d camera_platform_interface && fvm flutter analyze\"": {
       "test": "green"
     },
     "cmd /c \"cd /d camera/example && fvm flutter analyze\"": {
-      "test": "failed"
+      "test": "green"
     },
     "cmd /c \"cd /d camera_android_camerax/example && fvm flutter analyze\"": {
-      "test": "failed"
+      "test": "green"
     },
     "tools\\analyze_changed_and_new_files.bat": {
       "code_quality": "green"
     }
   },
-  "analysis_code_quality_answered": true
+  "analysis_code_quality_answered": true,
+  "project_id": 12303
 }
